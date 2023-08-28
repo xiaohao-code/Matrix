@@ -1,0 +1,3 @@
+/home/ubuntu/Matrix/build/CMakeFiles/rebuild_cache.dir
+/home/ubuntu/Matrix/build/CMakeFiles/edit_cache.dir
+/home/ubuntu/Matrix/build/CMakeFiles/example.dir

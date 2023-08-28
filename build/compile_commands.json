@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/ubuntu/Matrix/build",
+  "command": "/usr/bin/g++    -g   -std=gnu++11 -o CMakeFiles/example.dir/main.cpp.o -c /home/ubuntu/Matrix/main.cpp",
+  "file": "/home/ubuntu/Matrix/main.cpp"
+}
+]

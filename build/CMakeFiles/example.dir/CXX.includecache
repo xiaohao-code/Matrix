@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ubuntu/Matrix/main.cpp
+matrix.h
+/home/ubuntu/Matrix/matrix.h
+
+/home/ubuntu/Matrix/matrix.h
+iostream
+-
+vector
+-
+cmath
+-
+limits
+-
+
