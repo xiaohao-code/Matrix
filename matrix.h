@@ -5,12 +5,13 @@
 #include <cmath>
 #include <limits>
 
+
 template <typename T>
 class Matrix {
 public:
     std::vector<std::vector<T>> data;
 
-    template <typename U>
+	template <typename U>
 	friend std::ostream &operator<<(std::ostream &os, const Matrix<U> &matrix);
 
 	Matrix() = default;
@@ -63,9 +64,13 @@ public:
 
 	Matrix<T> cut(int row_head, int row_tail, int column_head, int column_tail) const; //切取部分矩阵,-1代表末尾
 
-	Matrix<double> inverse() const; //矩阵求逆(LU分解法）
+	std::pair<Matrix<double>, Matrix<double>> lu() const;
 
 	Matrix<double> cholesky() const; //矩阵cholesky分解
+
+	Matrix<double> inverse() const; //矩阵求逆(LU分解法）
+
+	//......
 
 private:
 	int row;
@@ -140,7 +145,7 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T> &matrix) const {
 		for (int i = 0; i < result.row; i++) {
 			for (int j = 0; j < result.column; j++) {
 				for (int k = 0; k < this->column; k++) {
-					result.data[i][k] += this->data[i][k] * matrix.data[k][j];
+					result.data[i][j] += this->data[i][k] * matrix.data[k][j];
 				}
 			}
 		}
@@ -418,88 +423,84 @@ Matrix<T> Matrix<T>::cut(int row_head, int row_tail, int column_head, int column
 }
 
 template <typename T>
+std::pair<Matrix<double>, Matrix<double>> Matrix<T>::lu() const {
+	Matrix<double> l(this->row, this->column);
+	for (int i = 0; i < this->row; i++) {
+		l.data[i][i] = 1;
+	}
+	Matrix<double> u(this->row, this->column);
+	for (int k = 0; k < this->row; k++) {
+		for (int j = k; j < this->column; j++) {
+			double sum = 0;
+			for (int r = 0; r <= k - 1; r++) {
+				sum += l.data[k][r] * u.data[r][j];
+			}
+			u.data[k][j] = this->data[k][j] - sum;
+		}
+		for (int i = k + 1; i < this->row; i++) {
+			double sum = 0;
+			for (int r = 0; r <= k - 1; r++) {
+				sum += l.data[i][r] * u.data[r][k];
+			}
+			l.data[i][k] = (this->data[i][k] - sum) / u.data[k][k];
+		}
+	}
+	return {l, u};
+}
+
+template <typename T>
+Matrix<double> Matrix<T>::cholesky() const {
+	Matrix<double> L(this->row, this->column);
+	for (int j = 0; j < L.column; j++) {
+		for (int i = j; i < L.row; i++) {
+			double sum = 0;
+			for (int k = 0; k <= j - 1; k++) {
+				sum += L.data[i][k] * L.data[j][k];
+			}
+			L.data[i][j] = (i == j) ? std::sqrt(this->data[j][j] - sum) : (this->data[i][j] - sum) / L.data[j][j];
+		}
+	}
+	return L;
+}
+
+template <typename T>
 Matrix<double> Matrix<T>::inverse() const {
 	if (this->column != this->row) {
 		std::cout << "Error:Matrix must be square" << std::endl;
 		exit(1);
 	}
-	Matrix<double> L(this->row, this->column);
-	Matrix<double> U(this->row, this->column);
-	Matrix<double> L_inv(this->row, this->column);
-	Matrix<double> U_inv(this->row, this->column);
-	for (int i = 0; i < this->row; i++) {
-		L.data[i][i] = 1;
-	}
-	for (int j = 0; j < this->column; j++) {
-		U.data[0][j] = this->data[0][j];
-	}
-	for (int i = 1; i < this->row; i++) {
-		L.data[i][0] = this->data[i][0] / U.data[0][0];
-	}
-	for (int i = 1; i < this->row; i++) {
-		for (int j = i; j < this->column; j++) {
-			double s = 0;
-			for (int k = 0; k < i; k++) {
-				s += L.data[i][k] * U.data[k][j];
-			}
-			U.data[i][j] = this->data[i][j] - s;
-		}
-		for (int d = i; d < this->row; d++) {
-			double s = 0;
-			for (int k = 0; k < i; k++) {
-				s += L.data[d][k] * U.data[k][i];
-			}
-			L.data[d][i] = (this->data[d][i] - s) / U.data[i][i];
-		}
-	}
+	auto lu_res = this->lu();
+	auto l = lu_res.first;
+	auto u = lu_res.second;
+	Matrix<double> l_inv(this->row, this->column);
+	Matrix<double> u_inv(this->row, this->column);
 	for (int j = 0; j < this->column; j++) {
 		for (int i = j; i < this->row; i++) {
 			if (i == j)
-				L_inv.data[i][j] = 1 / L.data[i][j];
-			else if (i < j)
-				L_inv.data[i][j] = 0;
+				l_inv.data[i][j] = 1 / l.data[i][j];
 			else {
 				double s = 0;
 				for (int k = j; k < i; k++) {
-					s += L.data[i][k] * L_inv.data[k][j];
+					s += l.data[i][k] * l_inv.data[k][j];
 				}
-				L_inv.data[i][j] = -L_inv.data[j][j] * s;
+				l_inv.data[i][j] = -l_inv.data[j][j] * s;
 			}
 		}
 	}
 	for (int i = 0; i < this->row; i++) {
 		for (int j = i; j >= 0; j--) {
 			if (i == j)
-				U_inv.data[j][i] = 1 / U.data[j][i];
-			else if (j > i)
-				U_inv.data[j][i] = 0;
+				u_inv.data[j][i] = 1 / u.data[j][i];
 			else {
 				double s = 0;
 				for (int k = j + 1; k <= i; k++) {
-					s += U.data[j][k] * U_inv.data[k][i];
+					s += u.data[j][k] * u_inv.data[k][i];
 				}
-				U_inv.data[j][i] = -1 / U.data[j][j] * s;
+				u_inv.data[j][i] = -1 / u.data[j][j] * s;
 			}
 		}
 	}
-	auto result = (U_inv) * (L_inv);
-	return result;
+	return (u_inv * l_inv);
 }
-
-template <typename T>
-Matrix<double> Matrix<T>::cholesky() const {
-	Matrix<double> L(this->row, this->column);
-	for (int i = 0; i < L.row; i++) {
-		for (int k = 0; k <= i; k++) {
-			double sum = 0;
-			for (int j = 0; j < k; j++) {
-				sum += L.data[i][j] * L.data[k][j];
-			}
-			L.data[i][k] = (i != k) ? (this->data[i][k] - sum) / L.data[k][k] : sqrt(this->data[i][i] - sum);
-		}
-	}
-	return L;
-}
-
 
 
