@@ -5,80 +5,78 @@
 #include <cmath>
 #include <limits>
 
-
-template <typename T>
 class Matrix {
 public:
-    std::vector<std::vector<T>> data;
 
-	template <typename U>
-	friend std::ostream &operator<<(std::ostream &os, const Matrix<U> &matrix);
+	friend std::ostream &operator<<(std::ostream &os, const Matrix &matrix);
 
 	Matrix() = default;
 
 	Matrix(int m, int n); // 构造零矩阵
 
-	Matrix(int m, int n, T value); //构造所有元素都是一个值的矩阵
+	Matrix(int m, int n, double value); //构造所有元素都是一个值的矩阵
 
-	explicit Matrix(std::vector<std::vector<T>> matrix);
+	explicit Matrix(std::vector<std::vector<double>> matrix);
 
-	Matrix(const Matrix<T> &) = default;
+	Matrix(const Matrix &) = default;
 
-	Matrix(Matrix<T> &&) = default;
+	Matrix(Matrix &&) = default;
 
 	~Matrix() = default;
 
-    Matrix<T> &operator=(const Matrix<T> &) = default;
+	std::vector<double> &operator[](int i);
 
-    Matrix<T> &operator=(Matrix<T> &&) = default;
+	Matrix &operator=(const Matrix &) = default;
 
-    Matrix<T> operator+(const Matrix<T> &matrix) const;
+    Matrix &operator=(Matrix &&) = default;
 
-	Matrix<T> operator-() const;
+    Matrix operator+(const Matrix &matrix) const;
 
-	Matrix<T> operator-(const Matrix<T> &matrix) const;
+	Matrix operator-() const;
 
-	Matrix<T> operator*(const Matrix<T> &matrix) const;
+	Matrix operator-(const Matrix &matrix) const;
 
-	Matrix<T> operator*(double num) const; //矩阵数乘
+	Matrix operator*(const Matrix &matrix) const;
+
+	Matrix operator*(double num) const; //矩阵数乘
 	
-	Matrix<T> transpose() const; //矩阵转置
+	Matrix transpose() const; //矩阵转置
 
-	Matrix<T> abs() const; //矩阵所有元素求绝对值
+	Matrix abs() const; //矩阵所有元素求绝对值
 
-	Matrix<T> sum(int setting) const; //矩阵按行(setting=1)或列(setting=2)求和
+	Matrix sum(int setting) const; //矩阵按行(setting=1)或列(setting=2)求和
 
-	Matrix<double> mean(int setting) const; //矩阵按行列求均值
+	Matrix mean(int setting) const; //矩阵按行列求均值
 
-	Matrix<double> std(int setting) const; //矩阵按行列求标准差
+	Matrix std(int setting) const; //矩阵按行列求标准差
 
-	Matrix<T> swap(int line1, int line2, int setting) const; //矩阵按行列交换位置
+	Matrix swap(int line1, int line2, int setting) const; //矩阵按行列交换位置
 
-	Matrix<int> min_position(int setting) const; //矩阵按行列找到元素最小值位置
+	Matrix min_position(int setting) const; //矩阵按行列找到元素最小值位置
 
-	Matrix<int> max_position(int setting) const; //矩阵按行列找到元素最大值位置
+	Matrix max_position(int setting) const; //矩阵按行列找到元素最大值位置
 
-	Matrix<T> min_value(int setting) const; //矩阵按行列找到元素最小值
+	Matrix min_value(int setting) const; //矩阵按行列找到元素最小值
 
-	Matrix<T> max_value(int setting) const; //矩阵按行列找到元素最大值
+	Matrix max_value(int setting) const; //矩阵按行列找到元素最大值
 
-	Matrix<T> cut(int row_head, int row_tail, int column_head, int column_tail) const; //切取部分矩阵,-1代表末尾
+	Matrix cut(int row_head, int row_tail, int column_head, int column_tail) const; //切取部分矩阵,-1代表末尾
 
-	std::pair<Matrix<double>, Matrix<double>> lu() const;
+	std::pair<Matrix, Matrix> lu() const;
 
-	Matrix<double> cholesky() const; //矩阵cholesky分解
+	Matrix cholesky() const; //矩阵cholesky分解
 
-	Matrix<double> inverse() const; //矩阵求逆(LU分解法）
+	Matrix inverse() const; //矩阵求逆(LU分解法）
 
 	//......
 
 private:
 	int row;
 	int column;
+	std::vector<std::vector<double>> data;
 };
 
-template <typename U>
-std::ostream &operator<<(std::ostream &os, const Matrix<U> &matrix) {
+std::ostream &operator<<(std::ostream &os, const Matrix &matrix) {
 	for (const auto &row : matrix.data) {
         for (const auto &element : row) {
             os << element << " ";
@@ -88,28 +86,28 @@ std::ostream &operator<<(std::ostream &os, const Matrix<U> &matrix) {
     return os;
 }
 
-template <typename T>
-Matrix<T>::Matrix(int m, int n) 
-	: data(m, std::vector<T>(n, 0)),
+Matrix::Matrix(int m, int n) 
+	: data(m, std::vector<double>(n, 0)),
 	  row(m),
 	  column(n) {}
 
-template <typename T>
-Matrix<T>::Matrix(int m, int n, T value)
-	: data(m, std::vector<T>(n, value)),
+Matrix::Matrix(int m, int n, double value)
+	: data(m, std::vector<double>(n, value)),
 	  row(m),
 	  column(n) {}
 
-template <typename T>
-Matrix<T>::Matrix(std::vector<std::vector<T>> matrix)
+Matrix::Matrix(std::vector<std::vector<double>> matrix)
 	: data(std::move(matrix)),
 	  row(data.size()),
 	  column(row > 0 ? data[0].size() : 0) {}
 
-template <typename T>
-Matrix<T> Matrix<T>::operator+(const Matrix<T> &matrix) const {
+std::vector<double>& Matrix::operator[](int i) {
+	return data[i];
+}
+
+Matrix Matrix::operator+(const Matrix &matrix) const {
 	if (this->row == matrix.row && this->column == matrix.column) {
-		Matrix<T> result(this->row, this->column);
+		Matrix result(this->row, this->column);
 		for (int i = 0; i < result.row; i++) {
 			for (int j = 0; j < result.column; j++) {
 				result.data[i][j] = this->data[i][j] + matrix.data[i][j];
@@ -122,26 +120,23 @@ Matrix<T> Matrix<T>::operator+(const Matrix<T> &matrix) const {
 	}
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::operator-() const {
-	Matrix<T> result(*this);
+Matrix Matrix::operator-() const {
+	Matrix result(*this);
 	for (int i = 0; i < result.row; i++) {
 		for (int j = 0; j < result.column; j++) {
-			result.data[i][j] = -result.data[i][j];
+			result[i][j] = -result[i][j];
 		}
 	}
 	return result;
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::operator-(const Matrix<T> &matrix) const {
+Matrix Matrix::operator-(const Matrix &matrix) const {
     return *this + (-matrix);
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::operator*(const Matrix<T> &matrix) const {
+Matrix Matrix::operator*(const Matrix &matrix) const {
 	if (this->column == matrix.row) {
-		Matrix<T> result(this->row, matrix.column);
+		Matrix result(this->row, matrix.column);
 		for (int i = 0; i < result.row; i++) {
 			for (int j = 0; j < result.column; j++) {
 				for (int k = 0; k < this->column; k++) {
@@ -156,9 +151,8 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T> &matrix) const {
 	}
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::operator*(double num) const {
-	Matrix<T> result(this->row, this->column);
+Matrix Matrix::operator*(double num) const {
+	Matrix result(this->row, this->column);
 	for (int i = 0; i < result.row; i++) {
 		for (int j = 0; j < result.column; j++) {
 			result.data[i][j] = this->data[i][j] * num;
@@ -167,9 +161,8 @@ Matrix<T> Matrix<T>::operator*(double num) const {
 	return result;
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::transpose() const {
-	Matrix<T> result(this->column, this->row);
+Matrix Matrix::transpose() const {
+	Matrix result(this->column, this->row);
 	for (int i = 0; i < result.row; i++) {
 		for (int j = 0; j < result.column; j++) {
 			result.data[i][j] = this->data[j][i];
@@ -178,9 +171,8 @@ Matrix<T> Matrix<T>::transpose() const {
 	return result;
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::abs() const {
-	Matrix<T> result(this->row, this->column);
+Matrix Matrix::abs() const {
+	Matrix result(this->row, this->column);
 	for (int i = 0; i < result.row; i++) {
 		for (int j = 0; j < result.column; j++) {
 			result.data[i][j] = std::abs(this->data[i][j]);
@@ -189,10 +181,9 @@ Matrix<T> Matrix<T>::abs() const {
 	return result;
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::sum(int setting) const {
+Matrix Matrix::sum(int setting) const {
 	if (setting == 1) {
-		Matrix<T> result(this->row, 1);
+		Matrix result(this->row, 1);
 		for (int i = 0; i < this->row; i++){
 			for (int j = 0; j < this->column; j++){
 				result.data[i][0] += this->data[i][j];
@@ -200,7 +191,7 @@ Matrix<T> Matrix<T>::sum(int setting) const {
 		}
 		return result;
 	} else if (setting == 2) {
-		Matrix<T> result(1, this->column);
+		Matrix result(1, this->column);
 		for (int j = 0; j < this->column; j++) {
 			for (int i = 0; i < this->row; i++) {
 				result.data[0][j] += this->data[i][j];
@@ -213,10 +204,9 @@ Matrix<T> Matrix<T>::sum(int setting) const {
 	}
 }
 
-template <typename T>
-Matrix<double> Matrix<T>::mean(int setting) const {
+Matrix Matrix::mean(int setting) const {
 	if (setting == 1) {
-		Matrix<double> mean(this->row, 1);
+		Matrix mean(this->row, 1);
 		auto sum = this->sum(setting);
         double nums = static_cast<double>(this->column);
         for (int i = 0; i < this->row; i++) {
@@ -224,7 +214,7 @@ Matrix<double> Matrix<T>::mean(int setting) const {
         }
         return mean;
 	} else if (setting == 2) {
-		Matrix<double> mean(1, this->column);
+		Matrix mean(1, this->column);
 		auto sum = this->sum(setting);
         double nums = static_cast<double>(this->row);
 		for (int j = 0; j < this->column; j++) {
@@ -237,11 +227,10 @@ Matrix<double> Matrix<T>::mean(int setting) const {
 	}
 }
 
-template <typename T>
-Matrix<double> Matrix<T>::std(int setting) const {
+Matrix Matrix::std(int setting) const {
 	if (setting == 1) {
 		auto mean = this->mean(setting);
-		Matrix<double> result(this->row, 1);
+		Matrix result(this->row, 1);
 		for (int i = 0; i < this->row; i++){
 			double sum = 0;
 			for (int j = 0; j < this->column; j++) {
@@ -253,7 +242,7 @@ Matrix<double> Matrix<T>::std(int setting) const {
 		return result;
 	} else if (setting == 2) {
 		auto mean = this->mean(setting);
-		Matrix<double> result(1, this->column);
+		Matrix result(1, this->column);
 		for (int j = 0; j < this->column; j++) {
 			double sum = 0;
 			for (int i = 0; i < this->row; i++) {
@@ -269,13 +258,12 @@ Matrix<double> Matrix<T>::std(int setting) const {
 	}
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::swap(int line1, int line2, int setting) const {
+Matrix Matrix::swap(int line1, int line2, int setting) const {
 	--line1;
 	--line2;
 	if (setting == 1) {
 		if (line1 < this->row && line2 < this->row) {
-			Matrix<T> result(*this);
+			Matrix result(*this);
 			result.data[line1] = this->data[line2];
 			result.data[line2] = this->data[line1];
 			return result;
@@ -285,7 +273,7 @@ Matrix<T> Matrix<T>::swap(int line1, int line2, int setting) const {
 		}
 	} else if (setting == 2) {
 		if (line1 < this->column && line2 < this->column){
-			Matrix<T> result(*this);
+			Matrix result(*this);
 			for (int i = 0; i < result.row; i++) {
 				result.data[i][line1] = this->data[i][line2];
 				result.data[i][line2] = this->data[i][line1];
@@ -301,12 +289,11 @@ Matrix<T> Matrix<T>::swap(int line1, int line2, int setting) const {
 	}
 }
 
-template <typename T>
-Matrix<int> Matrix<T>::min_position(int setting)  const{
+Matrix Matrix::min_position(int setting)  const{
 	if (setting == 1) {
-		Matrix<int> result(this->row, 1);
+		Matrix result(this->row, 1);
 		for (int i = 0; i < this->row; i++) {
-			auto min = std::numeric_limits<T>::max();
+			auto min = std::numeric_limits<double>::max();
 			for (int j = 0; j < this->column; j++) {
 				if (this->data[i][j] < min) {
 					min = this->data[i][j];
@@ -316,9 +303,9 @@ Matrix<int> Matrix<T>::min_position(int setting)  const{
 		}
 		return result;
 	} else if (setting == 2) {
-		Matrix<int> result(1, this->column);
+		Matrix result(1, this->column);
 		for (int j = 0; j < this->column; j++) {
-			auto min = std::numeric_limits<T>::max();
+			auto min = std::numeric_limits<double>::max();
 			for (int i = 0; i < this->row; i++) {
 				if (this->data[i][j] < min) {
 					min = this->data[i][j];
@@ -333,16 +320,14 @@ Matrix<int> Matrix<T>::min_position(int setting)  const{
 	}
 }
 
-template <typename T>
-Matrix<int> Matrix<T>::max_position(int setting) const {
+Matrix Matrix::max_position(int setting) const {
 	return (-(*this)).min_position(setting);
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::min_value(int setting) const {
+Matrix Matrix::min_value(int setting) const {
 	if (setting == 1) {
 		auto min_p = this->min_position(setting);
-		Matrix<T> result(this->row, 1);
+		Matrix result(this->row, 1);
 		for (int i = 0; i < this->row; i++) {
 			auto index = min_p.data[i][0];
 			result.data[i][0] = this->data[i][index];
@@ -350,7 +335,7 @@ Matrix<T> Matrix<T>::min_value(int setting) const {
 		return result;
 	} else if (setting == 2) {
 		auto min_p = this->min_position(setting);
-		Matrix<T> result(1, this->column);
+		Matrix result(1, this->column);
 		for (int j = 0; j < this->column; j++) {
 			auto index = min_p.data[0][j];
 			result.data[0][j] = this->data[index][j];
@@ -362,13 +347,11 @@ Matrix<T> Matrix<T>::min_value(int setting) const {
 	}
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::max_value(int setting) const {
+Matrix Matrix::max_value(int setting) const {
 	return -((-(*this)).min_value(setting));
 }
 
-template <typename T>
-Matrix<T> Matrix<T>::cut(int row_head, int row_tail, int column_head, int column_tail) const {
+Matrix Matrix::cut(int row_head, int row_tail, int column_head, int column_tail) const {
 	if (row_tail < 0) {
 		if (row_tail == -1) {
 			row_tail = this->row;
@@ -411,7 +394,7 @@ Matrix<T> Matrix<T>::cut(int row_head, int row_tail, int column_head, int column
 		} else {
 			row_head = row_head - 1;
 			column_head = column_head - 1;
-			Matrix<T> result(row_tail - row_head, column_tail - column_head);
+			Matrix result(row_tail - row_head, column_tail - column_head);
 			for (int i = 0; i < result.row; i++) {
 				for (int j = 0; j < result.column; j++) {
 					result.data[i][j] = this->data[i + row_head][j + column_head];
@@ -422,13 +405,12 @@ Matrix<T> Matrix<T>::cut(int row_head, int row_tail, int column_head, int column
 	}
 }
 
-template <typename T>
-std::pair<Matrix<double>, Matrix<double>> Matrix<T>::lu() const {
-	Matrix<double> l(this->row, this->column);
+std::pair<Matrix, Matrix> Matrix::lu() const {
+	Matrix l(this->row, this->column);
 	for (int i = 0; i < this->row; i++) {
 		l.data[i][i] = 1;
 	}
-	Matrix<double> u(this->row, this->column);
+	Matrix u(this->row, this->column);
 	for (int k = 0; k < this->row; k++) {
 		for (int j = k; j < this->column; j++) {
 			double sum = 0;
@@ -448,9 +430,8 @@ std::pair<Matrix<double>, Matrix<double>> Matrix<T>::lu() const {
 	return {l, u};
 }
 
-template <typename T>
-Matrix<double> Matrix<T>::cholesky() const {
-	Matrix<double> L(this->row, this->column);
+Matrix Matrix::cholesky() const {
+	Matrix L(this->row, this->column);
 	for (int j = 0; j < L.column; j++) {
 		for (int i = j; i < L.row; i++) {
 			double sum = 0;
@@ -463,8 +444,7 @@ Matrix<double> Matrix<T>::cholesky() const {
 	return L;
 }
 
-template <typename T>
-Matrix<double> Matrix<T>::inverse() const {
+Matrix Matrix::inverse() const {
 	if (this->column != this->row) {
 		std::cout << "Error:Matrix must be square" << std::endl;
 		exit(1);
@@ -472,8 +452,8 @@ Matrix<double> Matrix<T>::inverse() const {
 	auto lu_res = this->lu();
 	auto l = lu_res.first;
 	auto u = lu_res.second;
-	Matrix<double> l_inv(this->row, this->column);
-	Matrix<double> u_inv(this->row, this->column);
+	Matrix l_inv(this->row, this->column);
+	Matrix u_inv(this->row, this->column);
 	for (int j = 0; j < this->column; j++) {
 		for (int i = j; i < this->row; i++) {
 			if (i == j)
