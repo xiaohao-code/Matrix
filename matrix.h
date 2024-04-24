@@ -1,3 +1,6 @@
+/*用于二维矩阵的数值计算*/
+/*矩阵内元素类型为double*/
+/*实际使用vector存储矩阵元素*/
 #pragma once
 
 #include <iostream>
@@ -8,72 +11,72 @@
 class Matrix {
 public:
 
-	friend std::ostream &operator<<(std::ostream &os, const Matrix &matrix);
+	friend std::ostream &operator<<(std::ostream &os, const Matrix &matrix); //可用标准输出打印矩阵
 
-	Matrix() = default;
+	Matrix() = default; //默认构造
 
-	Matrix(int m, int n); // 构造零矩阵
+	Matrix(int m, int n); //构造零矩阵
 
 	Matrix(int m, int n, double value); //构造所有元素都是一个值的矩阵
 
-	explicit Matrix(std::vector<std::vector<double>> matrix);
+	explicit Matrix(std::vector<std::vector<double>> matrix); // 使用二维vector构造矩阵
 
-	Matrix(const Matrix &) = default;
+	Matrix(const Matrix &) = default; // 拷贝构造
 
-	Matrix(Matrix &&) = default;
+	Matrix(Matrix &&) = default; // 移动构造
 
-	~Matrix() = default;
+	~Matrix() = default; // 析构
 
-	std::vector<double> &operator[](int i);
+	std::vector<double> &operator[](int i); // 选取某一行
 
-	Matrix &operator=(const Matrix &) = default;
+	Matrix &operator=(const Matrix &) = default; // 拷贝赋值
 
-    Matrix &operator=(Matrix &&) = default;
+    Matrix &operator=(Matrix &&) = default; // 移动赋值
 
-    Matrix operator+(const Matrix &matrix) const;
+    Matrix operator+(const Matrix &matrix) const; // 矩阵相加
 
-	Matrix operator-() const;
+	Matrix operator-() const; // 矩阵元素取相反数
 
-	Matrix operator-(const Matrix &matrix) const;
+	Matrix operator-(const Matrix &matrix) const; // 矩阵相减
 
-	Matrix operator*(const Matrix &matrix) const;
+	Matrix operator*(const Matrix &matrix) const; // 矩阵相乘
 
-	Matrix operator*(double num) const; //矩阵数乘
+	Matrix operator*(double num) const; // 矩阵数乘
 	
-	Matrix transpose() const; //矩阵转置
+	Matrix transpose() const; // 矩阵转置
 
-	Matrix abs() const; //矩阵所有元素求绝对值
+	Matrix abs() const; // 矩阵所有元素求绝对值
 
-	Matrix sum(int setting) const; //矩阵按行(setting=1)或列(setting=2)求和
+	Matrix sum(int setting) const; // 矩阵按行(setting=1)或列(setting=2)求和
 
-	Matrix mean(int setting) const; //矩阵按行列求均值
+	Matrix mean(int setting) const; // 矩阵按行列求均值
 
-	Matrix std(int setting) const; //矩阵按行列求标准差
+	Matrix std(int setting) const; // 矩阵按行列求标准差
 
-	Matrix swap(int line1, int line2, int setting) const; //矩阵按行列交换位置
+	Matrix swap(int line1, int line2, int setting) const; // 矩阵按行列交换位置
 
-	Matrix min_position(int setting) const; //矩阵按行列找到元素最小值位置
+	Matrix min_position(int setting) const; // 矩阵按行列找到元素最小值位置
 
-	Matrix max_position(int setting) const; //矩阵按行列找到元素最大值位置
+	Matrix max_position(int setting) const; // 矩阵按行列找到元素最大值位置
 
-	Matrix min_value(int setting) const; //矩阵按行列找到元素最小值
+	Matrix min_value(int setting) const; // 矩阵按行列找到元素最小值
 
-	Matrix max_value(int setting) const; //矩阵按行列找到元素最大值
+	Matrix max_value(int setting) const; // 矩阵按行列找到元素最大值
 
-	Matrix cut(int row_head, int row_tail, int column_head, int column_tail) const; //切取部分矩阵,-1代表末尾
+	Matrix cut(int row_head, int row_tail, int column_head, int column_tail) const; // 切取部分矩阵,-1代表末尾
 
-	std::pair<Matrix, Matrix> lu() const;
+	std::pair<Matrix, Matrix> lu() const; // 矩阵LU分解
 
-	Matrix cholesky() const; //矩阵cholesky分解
+	Matrix cholesky() const; // 矩阵cholesky分解
 
-	Matrix inverse() const; //矩阵求逆(LU分解法）
+	Matrix inverse() const; // 矩阵求逆(LU分解法）
 
 	//......
 
 private:
-	int row;
-	int column;
-	std::vector<std::vector<double>> data;
+	int row; //行数
+	int column; //列数
+	std::vector<std::vector<double>> data; //实际存放元素
 };
 
 std::ostream &operator<<(std::ostream &os, const Matrix &matrix) {
@@ -87,19 +90,19 @@ std::ostream &operator<<(std::ostream &os, const Matrix &matrix) {
 }
 
 Matrix::Matrix(int m, int n) 
-	: data(m, std::vector<double>(n, 0)),
-	  row(m),
-	  column(n) {}
+	: row(m),
+	  column(n),
+	  data(m, std::vector<double>(n, 0)) {}
 
 Matrix::Matrix(int m, int n, double value)
-	: data(m, std::vector<double>(n, value)),
-	  row(m),
-	  column(n) {}
+	: row(m),
+	  column(n),
+	  data(m, std::vector<double>(n, value)) {}
 
 Matrix::Matrix(std::vector<std::vector<double>> matrix)
-	: data(std::move(matrix)),
-	  row(data.size()),
-	  column(row > 0 ? data[0].size() : 0) {}
+	: row(matrix.size()),
+	  column(row > 0 ? matrix[0].size() : 0),
+	  data(std::move(matrix)) {}
 
 std::vector<double>& Matrix::operator[](int i) {
 	return data[i];
