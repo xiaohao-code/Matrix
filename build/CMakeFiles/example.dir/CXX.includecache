@@ -7,6 +7,10 @@
 #IncludeRegexTransform: 
 
 /home/ubuntu/Matrix/main.cpp
+iostream
+-
+vector
+-
 matrix.h
 /home/ubuntu/Matrix/matrix.h
 
